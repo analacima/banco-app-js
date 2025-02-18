@@ -198,25 +198,33 @@ btnLogin.addEventListener("click", function (e) {
     //inputLoginPin.value=""
     inputLoginUsername.value=inputLoginPin.value=""
 
-    //updateUI(account)
-
+    updateUI(account)
+    
   } else
     labelWelcome.textContent+=". Los datos introducidos son incorrectos."
-
-  
-           
+          
   
   //  cargo los datos de la cuenta correspondiente
 })
 
 
 const updateUI = function(account){
- //mostrar los movimietnos de la cuenta
- // mostrar el balance
- 
-
+  // mostrar los movimientos de la cuenta
+ //displayMovements(account.movements);
+ // mostrar el balance de la cuenta
+ calcDisplayBalance(account.movements);
+ // mostrar el total de los movimientos de la cuenta
+ // ingresos y gastos
+ //calcDisplaySummary(account);
 }
 
 // tarea: saber calcular el balance, los ingresos y los gastos
 // balance usando map +reduce
 // ingresos y gastos-> map+filter+reduce
+
+
+const calcDisplayBalance=function(movimientos){
+  const total = movimientos
+    .reduce ((acumulador,movimientos) => acumulador +movimientos,0);
+  console.log(total)
+}
