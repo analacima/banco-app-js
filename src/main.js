@@ -1,4 +1,5 @@
 import "./style.css";
+import accounts from "./accounts.js";
 
 document.querySelector("#app").innerHTML = `
     <nav>
@@ -105,37 +106,6 @@ document.querySelector("#app").innerHTML = `
     </main>
 `;
 
-// Data
-const account1 = {
-  owner: "Juan Sánchez",
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
-  interestRate: 1.2, // %
-  pin: 1111,
-};
-
-const account2 = {
-  owner: "María Portazgo",
-  movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
-  interestRate: 1.5,
-  pin: 2222,
-};
-
-const account3 = {
-  owner: "Estefanía Pueyo",
-  movements: [200, -200, 340, -300, -20, 50, 400, -460],
-  interestRate: 0.7,
-  pin: 3333,
-};
-
-const account4 = {
-  owner: "Javier Rodríguez",
-  movements: [430, 1000, 700, 50, 90],
-  interestRate: 1,
-  pin: 4444,
-};
-
-const accounts = [account1, account2, account3, account4];
-
 // Elements
 const labelWelcome = document.querySelector(".welcome");
 const labelDate = document.querySelector(".date");
@@ -167,15 +137,17 @@ const inputClosePin = document.querySelector(".form__input--pin");
 const createUserName = function (accounts) {
   accounts.forEach(function (account) {
     account.username = account.owner
-      .toLowerCase()          // convierte a minúsculas
-      .split(" ")             // convierte en un array
+      .toLowerCase() // convierte a minúsculas
+      .split(" ") // convierte en un array
       .map((name) => name[0]) // extrae las iniciales
-      .join("");              // une las iniciales
+      .join(""); // une las iniciales
   });
 };
 
 createUserName(accounts);
-console.log(accounts)
+console.log(accounts);
+
+let account; // variable para almacenar la cuenta del usuario que ha iniciado sesión
 
 btnLogin.addEventListener("click", function (e) {
   // ?? evitar que el formulario se envíe
@@ -183,48 +155,113 @@ btnLogin.addEventListener("click", function (e) {
   // autenticar: recojo username y pin, los comparo con los datos de las cuentas (arrays accounts)
   const inputUsername = inputLoginUsername.value;
   const inputPin = Number(inputLoginPin.value);
-  
+
   // comprobamos que coincidan usuario y pin con los datos de alguna de las cuentas
-  const account = accounts.find(
+  
+  // antes tenía una variable account, ahora la tengo pública
+  // const account = accounts.find(
+    
+  
+  account = accounts.find(
     (account) => account.username === inputUsername && account.pin === inputPin
   );
 
   // si los datos introducidos son correctos, muestro un mensaje de bienvenida y la aplicación
   if (account) {
+  
     containerApp.style.opacity = 1;
-    labelWelcome.textContent= `Welcome, ${account.owner.split(" ")[0]}.`; //
+    labelWelcome.textContent = `Welcome, ${account.owner.split(" ")[0]}.`; //
+    
     //limpiar el formulario
     //inputLoginUsername.value=""
     //inputLoginPin.value=""
-    inputLoginUsername.value=inputLoginPin.value=""
+    inputLoginUsername.value = inputLoginPin.value = "";
 
-    updateUI(account)
-    
-  } else
-    labelWelcome.textContent+=". Los datos introducidos son incorrectos."
-          
-  
+    updateUI(account);
+  } else labelWelcome.textContent += ". Los datos introducidos son incorrectos.";
+
   //  cargo los datos de la cuenta correspondiente
-})
+});
+
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+  // calcular el balance
+  const balance = account.movements.reduce(
+    (acumulador, movimientos) => acumulador + movimientos,
+    0
+  );
+
+  // obtener el importe del préstamo
+  const amount = Number(inputLoanAmount.value);
+
+  if (amount > 0 && amount < (balance*2) ){
+    // añadir el importe al array de movimientos
+    account.movements.push(amount);
+    console.log(account.movements);
+    // actualizar la interfaz
+    updateUI(account);
+  } else {
+    console.log("El importe del préstamo debe ser superior a 0 y no puede ser superior al doble del balance");
+  }
+  inputLoanAmount.value = "";
+});
 
 
-const updateUI = function(account){
+const updateUI = function ({ movements }) {
+  // en lugar de account, desestructuramos el objeto para obtener solo los movimientos
+  //const updateUI = function(account){
   // mostrar los movimientos de la cuenta
- //displayMovements(account.movements);
- // mostrar el balance de la cuenta
- calcDisplayBalance(account.movements);
- // mostrar el total de los movimientos de la cuenta
- // ingresos y gastos
- //calcDisplaySummary(account);
-}
+  displayMovements(movements);
+  // mostrar el balance de la cuenta
+  DisplayBalance(movements);
+  // mostrar el total de los movimientos de la cuenta
+  // ingresos y gastos
+  DisplaySummary(movements);
+};
 
 // tarea: saber calcular el balance, los ingresos y los gastos
 // balance usando map +reduce
 // ingresos y gastos-> map+filter+reduce
 
+const DisplayBalance = function (movimientos) {
+  const total = movimientos.reduce(
+    (acumulador, movimientos) => acumulador + movimientos,
+    0
+  );
+  labelBalance.textContent = `${total.toFixed(2)}€`;
+};
 
-const calcDisplayBalance=function(movimientos){
-  const total = movimientos
-    .reduce ((acumulador,movimientos) => acumulador +movimientos,0);
-  console.log(total)
-}
+const DisplaySummary = function (movimientos) {
+  // sumar ingresos y mostarlos
+  const sumIn = movimientos
+    .filter((mov) => mov > 0)
+    .reduce((acumulador, mov) => acumulador + mov, 0);
+  labelSumIn.textContent = `${sumIn.toFixed(2)}€`;
+
+  // sumar gastos y mostrarlos
+  const sumOut = movimientos
+    .filter((mov) => mov < 0)
+    .reduce((acumulador, mov) => acumulador + mov, 0);
+  labelSumOut.textContent = `${sumOut.toFixed(2)}€`;
+};
+
+const displayMovements = function (movements) {
+  containerMovements.innerHTML = ""; //limpiamos el contenedor de movimientos, que estaban en el html inicial
+// recorremos el array de movimientos y por cada uno de ellos, creamos un html que insertamos en el contenedor de movimientos
+  movements.forEach(function (mov, index) {
+    //  a la función le pasamos cada vez el movimiento y la posición en el array
+    //movements.forEach( (mov, index)=> { - sería lo mismo, quitando la palabra function
+    const type = mov > 0 ? "deposit" : "withdrawal";
+    const html = `
+    <!-- cada movimiento va en un div con la clase "movements__row" -->
+    <div class="movements__row">
+      <!-- según el tipo de movimiento, se le asigna una clase y le indicamos el número de movimiento comenzando por 1 -->
+      <div class="movements__type movements__type--${type}">${index + 1} ${type}</div>
+      <div class="movements__date">3 days ago</div>
+      <div class="movements__value">${mov.toFixed(2)}€</div>
+    </div>
+    `;
+    // insertamos el html en el contenedor de movimientos
+    containerMovements.insertAdjacentHTML("afterbegin", html);
+  });
+};
