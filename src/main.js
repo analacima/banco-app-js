@@ -13,7 +13,7 @@ document.querySelector("#app").innerHTML = `
         />
         <!-- In practice, use type="password" -->
         <input
-          type="text"
+          type="password"
           placeholder="PIN"
           maxlength="4"
           class="login__input login__input--pin"
@@ -163,7 +163,7 @@ btnLogin.addEventListener("click", function (e) {
     
   
   account = accounts.find(
-    (account) => account.username === inputUsername && account.pin === inputPin
+    (cuenta) => cuenta.username === inputUsername && cuenta.pin === inputPin
   );
 
   // si los datos introducidos son correctos, muestro un mensaje de bienvenida y la aplicación
@@ -178,7 +178,9 @@ btnLogin.addEventListener("click", function (e) {
     inputLoginUsername.value = inputLoginPin.value = "";
 
     updateUI(account);
-  } else labelWelcome.textContent += ". Los datos introducidos son incorrectos.";
+  } else alert("Los datos introducidos son incorrectos."); 
+  inputLoginUsername.value = inputLoginPin.value = "";
+
 
   //  cargo los datos de la cuenta correspondiente
 });
@@ -197,13 +199,35 @@ btnLoan.addEventListener("click", function (e) {
   if (amount > 0 && amount < (balance*2) ){
     // añadir el importe al array de movimientos
     account.movements.push(amount);
-    console.log(account.movements);
+    alert("Se ha realizado el préstamo correctamente");
     // actualizar la interfaz
     updateUI(account);
   } else {
-    console.log("El importe del préstamo debe ser superior a 0 y no puede ser superior al doble del balance");
+      alert("El importe del préstamo debe ser superior a 0 y no puede ser superior al doble del balance");
   }
   inputLoanAmount.value = "";
+});
+
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault();
+
+    // comprobar que el usuario y el pin son correctos
+  if (inputCloseUsername.value===account.username && Number(inputClosePin.value)===account.pin){
+    // Añadir confirmación antes de eliminar la cuenta
+    const confirmDelete = confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.");
+    
+    if (confirmDelete) {
+      // eliminar la cuenta
+      const index = accounts.findIndex(cuenta => cuenta.username === inputCloseUsername.value);
+      accounts.splice(index, 1);
+      // ocultar la app
+      containerApp.style.opacity = 0;
+      labelWelcome.textContent = "Log in to get started";
+    }
+  } else {
+    alert("El usuario o el pin son incorrectos");
+  }
+  inputCloseUsername.value = inputClosePin.value = "";
 });
 
 
@@ -218,10 +242,6 @@ const updateUI = function ({ movements }) {
   // ingresos y gastos
   DisplaySummary(movements);
 };
-
-// tarea: saber calcular el balance, los ingresos y los gastos
-// balance usando map +reduce
-// ingresos y gastos-> map+filter+reduce
 
 const DisplayBalance = function (movimientos) {
   const total = movimientos.reduce(
