@@ -157,48 +157,76 @@ btnLogin.addEventListener("click", function (e) {
   const inputPin = Number(inputLoginPin.value);
 
   // comprobamos que coincidan usuario y pin con los datos de alguna de las cuentas
-  
-  // antes tenía una variable account, ahora la tengo pública
-  // const account = accounts.find(
-    
-  
   account = accounts.find(
     (cuenta) => cuenta.username === inputUsername && cuenta.pin === inputPin
   );
 
   // si los datos introducidos son correctos, muestro un mensaje de bienvenida y la aplicación
   if (account) {
-  
     containerApp.style.opacity = 1;
     labelWelcome.textContent = `Welcome, ${account.owner.split(" ")[0]}.`; //
-    
-    //limpiar el formulario
-    //inputLoginUsername.value=""
-    //inputLoginPin.value=""
+    // limpiar el formulario
     inputLoginUsername.value = inputLoginPin.value = "";
-
+    // muestro los datos de la cuenta
     updateUI(account);
-  } else alert("Los datos introducidos son incorrectos."); 
+  } else 
+    alert("Los datos introducidos son incorrectos."); 
   inputLoginUsername.value = inputLoginPin.value = "";
 
+});
 
-  //  cargo los datos de la cuenta correspondiente
+btnTransfer.addEventListener("click", function (e) {
+  e.preventDefault();
+  // comprobar los datos introducidos
+  // buscamos la cuenta de destino
+  const recipientAccount = accounts.find(
+    (cuenta) => cuenta.username === inputTransferTo.value
+  );
+  console.log(recipientAccount);
+  // por un lado, que la cuenta exista // plus-> y que no sea la misma que la del usuario
+  if (recipientAccount){
+    if (recipientAccount.username !== account.username){
+      // por otro, que la cantidad sea positiva y dentro del saldo
+      const amount = Number(inputTransferAmount.value);
+      if (amount > 0 && amount <= calcBalance(account.movements)){
+        // confirmar que se quiere realizar la transferencia antes de hacerla 
+        const confirmTransfer = confirm("¿Estas seguro de realizar la transferencia?");
+        if (confirmTransfer){
+        // añadir el movimiento al array de movimientos del cliente destino 
+        // incluir uno en negativo en el array de movimientos del cliente origen       
+        // y mostrar mensaje de confirmación   
+          recipientAccount.movements.push(amount);
+          account.movements.push(-amount);
+          alert("Se ha realizado la transferencia correctamente de " + amount + "€ a la cuenta de " + recipientAccount.owner);
+          updateUI(account);
+        }
+      } else {
+        alert("La cantidad debe ser positiva y no puede ser superior al saldo");
+      }
+    }
+    else {
+      alert("No puedes transferir dinero a tu propia cuenta");
+    }
+  } else {
+    alert("La cuenta de destino no existe");
+  }
+  // limpiar los campos de transferencia
+  inputTransferTo.value = inputTransferAmount.value = "";
+
+
+
 });
 
 btnLoan.addEventListener("click", function (e) {
   e.preventDefault();
-  // calcular el balance
-  const balance = account.movements.reduce(
-    (acumulador, movimientos) => acumulador + movimientos,
-    0
-  );
 
   // obtener el importe del préstamo
   const amount = Number(inputLoanAmount.value);
 
-  if (amount > 0 && amount < (balance*2) ){
+  if (amount > 0 && amount < (calcBalance(account.movements)*2) ){
     // añadir el importe al array de movimientos
     account.movements.push(amount);
+    // mensaje de confirmación
     alert("Se ha realizado el préstamo correctamente");
     // actualizar la interfaz
     updateUI(account);
@@ -232,26 +260,32 @@ btnClose.addEventListener("click", function (e) {
 
 
 const updateUI = function ({ movements }) {
-  // en lugar de account, desestructuramos el objeto para obtener solo los movimientos
-  //const updateUI = function(account){
-  // mostrar los movimientos de la cuenta
   displayMovements(movements);
-  // mostrar el balance de la cuenta
-  DisplayBalance(movements);
-  // mostrar el total de los movimientos de la cuenta
-  // ingresos y gastos
-  DisplaySummary(movements);
+  displayBalance(movements);
+  displaySummary(movements);
 };
 
-const DisplayBalance = function (movimientos) {
+const displayBalance = function (movimientos) {
+  // sumamos todos los movimientos y mostramos el total
+  /*
   const total = movimientos.reduce(
     (acumulador, movimientos) => acumulador + movimientos,
     0
   );
+  */
+  const total = calcBalance(movimientos);
   labelBalance.textContent = `${total.toFixed(2)}€`;
 };
 
-const DisplaySummary = function (movimientos) {
+const calcBalance = function (movimientos) {
+  const balance = movimientos.reduce(
+    (acumulador, movimientos) => acumulador + movimientos,
+    0
+  );
+  return balance;
+};
+
+const displaySummary = function (movimientos) {
   // sumar ingresos y mostarlos
   const sumIn = movimientos
     .filter((mov) => mov > 0)
