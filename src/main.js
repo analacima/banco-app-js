@@ -1,5 +1,7 @@
 import "./style.css";
-import accounts from "./accounts.js";
+// import accounts from "./accounts.js";
+ 
+import accounts, { Movimiento } from "./accounts.js"; // Asegúrate de que la ruta sea correcta
 
 document.querySelector("#app").innerHTML = `
     <nav>
@@ -174,7 +176,7 @@ btnLogin.addEventListener("click", function (e) {
   inputLoginUsername.value = inputLoginPin.value = "";
 
 });
-
+/* sin objetos
 btnTransfer.addEventListener("click", function (e) {
   e.preventDefault();
   // comprobar los datos introducidos
@@ -212,11 +214,49 @@ btnTransfer.addEventListener("click", function (e) {
   }
   // limpiar los campos de transferencia
   inputTransferTo.value = inputTransferAmount.value = "";
+});
+*/
 
+// con objetos
+btnTransfer.addEventListener("click", function (e) {
+  e.preventDefault();
+  // comprobar los datos introducidos
+  // buscamos la cuenta de destino
+  const recipientAccount = accounts.find(
+    (cuenta) => cuenta.username === inputTransferTo.value
+  );
 
-
+  // por un lado, que la cuenta exista y que no sea la misma que la del usuario
+  if (recipientAccount) {
+    if (recipientAccount.username !== account.username) {
+      // por otro, que la cantidad sea positiva y dentro del saldo
+      const amount = Number(inputTransferAmount.value);
+      if (amount > 0 && amount <= calcBalance(account.movements)) {
+        // confirmar que se quiere realizar la transferencia antes de hacerla 
+        const confirmTransfer = confirm("¿Estás seguro de realizar la transferencia?");
+        if (confirmTransfer) {
+          // añadir el movimiento al array de movimientos del cliente destino 
+          const fecha = new Date(); // Obtener la fecha actual
+          recipientAccount.movements.push(new Movimiento(amount, fecha)); // Agregar objeto Movimiento
+          account.movements.push(new Movimiento(-amount, fecha)); // Agregar objeto Movimiento negativo
+          
+          alert("Se ha realizado la transferencia correctamente de " + amount + "€ a la cuenta de " + recipientAccount.owner);
+          updateUI(account);
+        }
+      } else {
+        alert("La cantidad debe ser positiva y no puede ser superior al saldo");
+      }
+    } else {
+      alert("No puedes transferir dinero a tu propia cuenta");
+    }
+  } else {
+    alert("La cuenta de destino no existe");
+  }
+  // limpiar los campos de transferencia
+  inputTransferTo.value = inputTransferAmount.value = "";
 });
 
+/* sin objetos 
 btnLoan.addEventListener("click", function (e) {
   e.preventDefault();
 
@@ -232,6 +272,28 @@ btnLoan.addEventListener("click", function (e) {
     updateUI(account);
   } else {
       alert("El importe del préstamo debe ser superior a 0 y no puede ser superior al doble del balance");
+  }
+  inputLoanAmount.value = "";
+});
+*/
+
+// con objetos
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  // obtener el importe del préstamo
+  const amount = Number(inputLoanAmount.value);
+
+  if (amount > 0 && amount < (calcBalance(account.movements) * 2)) {
+    // Aquí es donde debes crear un objeto Movimiento
+    const fecha = new Date(); // Puedes usar la fecha actual
+    account.movements.push(new Movimiento(amount, fecha)); // Cambia esto
+    // mensaje de confirmación
+    alert("Se ha realizado el préstamo correctamente");
+    // actualizar la interfaz
+    updateUI(account);
+  } else {
+    alert("El importe del préstamo debe ser superior a 0 y no puede ser superior al doble del balance");
   }
   inputLoanAmount.value = "";
 });
@@ -277,6 +339,7 @@ const displayBalance = function (movimientos) {
   labelBalance.textContent = `${total.toFixed(2)}€`;
 };
 
+/* sin objeto
 const calcBalance = function (movimientos) {
   const balance = movimientos.reduce(
     (acumulador, movimientos) => acumulador + movimientos,
@@ -284,7 +347,14 @@ const calcBalance = function (movimientos) {
   );
   return balance;
 };
+*/
 
+// con objeto
+function calcBalance(movimientos) {
+  return movimientos.reduce((total, movimiento) => total + movimiento.importe, 0);
+}
+
+/* sin objetos
 const displaySummary = function (movimientos) {
   // sumar ingresos y mostarlos
   const sumIn = movimientos
@@ -298,7 +368,25 @@ const displaySummary = function (movimientos) {
     .reduce((acumulador, mov) => acumulador + mov, 0);
   labelSumOut.textContent = `${sumOut.toFixed(2)}€`;
 };
+*/
 
+// con objetos
+const displaySummary = function (movimientos) {
+  // Sumar ingresos y mostrarlos
+  const sumIn = movimientos
+    .filter((mov) => mov.importe > 0) // Cambiar a mov.importe
+    .reduce((acumulador, mov) => acumulador + mov.importe, 0); // Cambiar a mov.importe
+  labelSumIn.textContent = `${sumIn.toFixed(2)}€`;
+
+  // Sumar gastos y mostrarlos
+  const sumOut = movimientos
+    .filter((mov) => mov.importe < 0) // Cambiar a mov.importe
+    .reduce((acumulador, mov) => acumulador + mov.importe, 0); // Cambiar a mov.importe
+  labelSumOut.textContent = `${Math.abs(sumOut).toFixed(2)}€`; // Mostrar como positivo
+};
+
+
+/*
 const displayMovements = function (movements) {
   containerMovements.innerHTML = ""; //limpiamos el contenedor de movimientos, que estaban en el html inicial
 // recorremos el array de movimientos y por cada uno de ellos, creamos un html que insertamos en el contenedor de movimientos
@@ -317,5 +405,26 @@ const displayMovements = function (movements) {
     `;
     // insertamos el html en el contenedor de movimientos
     containerMovements.insertAdjacentHTML("afterbegin", html);
+  });
+};
+*/
+
+// con objetos
+const displayMovements = function (movements) {
+  containerMovements.innerHTML = ""; // Limpiamos el contenedor de movimientos
+  movements.forEach(function (mov, index) {
+    if (mov && typeof mov.importe !== 'undefined') { // Verificar que mov y mov.importe están definidos
+      const type = mov.importe > 0 ? "deposit" : "withdrawal";
+      const html = `
+      <div class="movements__row">
+        <div class="movements__type movements__type--${type}">${index + 1} ${type}</div>
+        <div class="movements__date">3 days ago</div>
+        <div class="movements__value">${mov.importe.toFixed(2)}€</div>
+      </div>
+      `;
+      containerMovements.insertAdjacentHTML("afterbegin", html);
+    } else {
+      console.error("Movimiento no válido:", mov); // Log para depuración
+    }
   });
 };
