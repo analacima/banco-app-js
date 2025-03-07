@@ -70,12 +70,3 @@ const account4 = {
 const accounts = [account1, account2, account3, account4];
 
 export default accounts;
-/*
-export class Movimiento {
-  constructor(importe, fecha) {
-      this.importe = importe;
-      this.fecha = fecha;
-  }
-}
-  
-*/
