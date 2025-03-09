@@ -12,6 +12,7 @@
     "vite": "^6.1.0"
   },
   "dependencies": {
-    "@faker-js/faker": "^9.5.1"
+    "@faker-js/faker": "^9.5.1",
+    "moment": "^2.30.1"
   }
 }

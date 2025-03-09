@@ -1,5 +1,25 @@
 import "./style.css"; 
 import accounts, { Movimiento } from "./accounts.js"; // cambio al usar datos de Faker
+import moment from "moment";
+import "moment/locale/es";
+
+moment.locale("es", {
+  relativeTime: {
+    future: "en %s",
+    past: "hace %s",
+    s: "unos segundos",
+    m: "un minuto",
+    mm: "%d minutos",
+    h: "una hora",
+    hh: "%d horas",
+    d: "un día",
+    dd: "%d días",
+    M: "un mes",
+    MM: "%d meses",
+    y: "un año",
+    yy: "%d años",
+  },
+});
 
 
 document.querySelector("#app").innerHTML = `
@@ -132,6 +152,9 @@ const inputTransferAmount = document.querySelector(".form__input--amount");
 const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
+
+
+
 
 // hacer una función que modifique los arrays para añadir un campo con las iniciales de los clientes
 
@@ -409,7 +432,7 @@ const displayMovements = function (movements) {
   });
 };
 */
-
+/* sin fecha
 // con objetos
 const displayMovements = function (movements) {
   containerMovements.innerHTML = ""; // Limpiamos el contenedor de movimientos
@@ -420,6 +443,26 @@ const displayMovements = function (movements) {
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${index + 1} ${type}</div>
         <div class="movements__date">3 days ago</div>
+        <div class="movements__value">${mov.importe.toFixed(2)}€</div>
+      </div>
+      `;
+      containerMovements.insertAdjacentHTML("afterbegin", html);
+    } else {
+      console.error("Movimiento no válido:", mov); // Log para depuración
+    }
+  });
+};
+*/
+const displayMovements = function (movements) {
+  containerMovements.innerHTML = ""; // Limpiamos el contenedor de movimientos
+  movements.forEach(function (mov, index) {
+    if (mov && typeof mov.importe !== 'undefined') { // Verificar que mov y mov.importe están definidos
+      const type = mov.importe > 0 ? "deposit" : "withdrawal";
+      const fechaRelativa = moment(mov.fecha).fromNow(); // Calcular la fecha relativa
+      const html = `
+      <div class="movements__row">
+        <div class="movements__type movements__type--${type}">${index + 1} ${type}</div>
+        <div class="movements__date">${fechaRelativa}</div>
         <div class="movements__value">${mov.importe.toFixed(2)}€</div>
       </div>
       `;
