@@ -1,9 +1,5 @@
-import "./style.css";
-// import accounts from "./accounts.js";
- 
+import "./style.css"; 
 import accounts, { Movimiento } from "./accounts.js"; // cambio al usar datos de Faker
-import { faker } from '@faker-js/faker';
-//import { Movimiento } from './accounts.js'; // Asegúrate de importar la clase Movimiento
 
 
 document.querySelector("#app").innerHTML = `
@@ -139,7 +135,7 @@ const inputClosePin = document.querySelector(".form__input--pin");
 
 // hacer una función que modifique los arrays para añadir un campo con las iniciales de los clientes
 
- //sin faker
+
 const createUserName = function (accounts) {
   accounts.forEach(function (account) {
     account.username = account.owner
@@ -150,35 +146,9 @@ const createUserName = function (accounts) {
   });
 };
 
-// con faker
-const generateRandomUserData = () => {
-  const owner = faker.person.fullName(); // Generar un nombre aleatorio
-  const pin = faker.number.int({min: 1000, max: 9999}); // Generar un PIN aleatorio de 4 dígitos
 
-  // Generar movimientos aleatorios
-  const movements = [];
-  for (let i = 0; i < 8; i++) {
-    const importe = faker.number.int({min: -200, max: 1000, multipleOf: 10}); // Generar un importe aleatorio
-    const fecha = faker.date.past(); // Generar una fecha aleatoria en el pasado
-    movements.push(new Movimiento(importe, fecha)); // Crear un nuevo objeto Movimiento
-  }
-
-  // Devolver un objeto con los datos generados
-  return {
-    owner,
-    movements,
-    interestRate: faker.number.float({ min: 0.5, max: 5.0, fractionDigits: 2 }), // Generar una tasa de interés aleatoria
-    pin,
-  };
-};
-
- //sin faker
 createUserName(accounts);
 console.log(accounts);
-
-// con faker
-const randomUser = generateRandomUserData();
-console.log(randomUser);
 
 let account; // variable para almacenar la cuenta del usuario que ha iniciado sesión
 
